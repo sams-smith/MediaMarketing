@@ -1,0 +1,167 @@
+/* Echo & Chrome: background themes.
+   Every color on the home, shop and product pages comes from the --t-* tokens below.
+   The defaults are the charcoal look; themes.js swaps in a light palette when one is chosen.
+   The hero photo and the "logo moment" screen stay dark in every theme (--night-*). */
+:root {
+  --t-bg: #262626;              /* page */
+  --t-band: #1c1c1c;            /* footer, lamp viewer, photo frames */
+  --t-bar: #1c1c1c;             /* header */
+  --t-bar-ink: #dad62c;         /* header + footer type */
+  --t-bar-soft: rgba(218, 214, 44, 0.62);
+  --t-fg: #dad62c;              /* running type */
+  --t-head: #dad62c;            /* headlines, product name and price */
+  --t-soft: rgba(218, 214, 44, 0.62);
+  --t-body: #e9e5d6;            /* product descriptions */
+  --t-line: rgba(218, 214, 44, 0.22);
+  --t-accent: #dad62c;          /* underlines, active menu item */
+  --t-rule: rgba(218, 214, 44, 0.22);
+  --t-hl: transparent;          /* highlighter behind "done timelessly" */
+
+  /* photos and the words that sit on them never change */
+  --night: #262626;
+  --night-deep: #1c1c1c;
+  --night-ink: #dad62c;
+  --night-paper: #fffbf9;
+
+  /* feed the tokens each page already uses */
+  --ink: var(--t-bg);
+  --ink-deep: var(--t-band);
+  --yellow: var(--t-fg);
+  --line: var(--t-line);
+  --slot: radial-gradient(ellipse 58% 40% at 50% 47%, rgba(255, 186, 92, 0.28), rgba(255, 186, 92, 0.09) 55%, rgba(255, 186, 92, 0) 78%), linear-gradient(#2c2a26, #242321);   /* empty photo holder: lamplight glow */
+  --slot-edge: rgba(218, 214, 44, 0.16);
+  --soft: var(--t-soft);
+}
+html[data-tone="light"] { color-scheme: light; }
+
+body { background: var(--t-bg); color: var(--t-fg); transition: background-color 0.35s ease, color 0.35s ease; }
+body::before { background: var(--t-bar); }
+
+/* header + footer */
+.site-header { background: var(--t-bar); color: var(--t-bar-ink); border-bottom-color: var(--t-line); }
+.site-footer { background: var(--t-band); color: var(--t-bar-ink); border-top-color: var(--t-line); }
+.site-footer small { color: var(--t-bar-soft); }
+.menu-btn { color: var(--t-bar-ink); border-color: var(--t-line); }
+.nav a:hover, .nav a[aria-current="true"], .nav a[aria-current="page"] { border-bottom-color: var(--t-accent); }
+@media (max-width: 760px) {
+  .site-header .nav { background: var(--t-bar); border-bottom-color: var(--t-line); }
+  .site-header .nav a { border-bottom-color: var(--t-line); }
+}
+
+/* type */
+.big-head, .section-head, .designer__head, .shop__head, .product__name, .product__price { color: var(--t-head); }
+.big-head em span { background: linear-gradient(transparent 58%, var(--t-hl) 58%); }
+.text-link, .photo-link { text-decoration-color: var(--t-accent); }
+html[data-tone="light"] .text-link, html[data-tone="light"] .photo-link { text-decoration-thickness: 2px; }
+.swipe-hint { color: var(--t-soft); }
+.product__desc { color: var(--t-body); }
+.product__rule { background: var(--t-rule); }
+.pager { border-top-color: var(--t-line); }
+
+/* the hero and the logo moment always stay dark, with the chartreuse logo */
+.hero { color: var(--night-ink); }
+.hero .shot { background: var(--night); }
+.hero .text-link { text-decoration-color: var(--night-ink); }
+.veil { background: var(--night-deep); }
+.veil__mark { color: var(--night-ink); }
+.gallery__arrow { color: var(--night-ink); }
+
+/* photos look exactly the same in every theme: same dimming, always over charcoal */
+.shot { background: var(--night); }
+html[data-tone="light"] .lighting .shot { border-left: 0; }
+
+/* words that sit ON a photo keep the charcoal-theme colors */
+.card__title { color: var(--night-ink); }
+.card .photo-link { text-decoration-color: var(--night-ink); }
+.about__text { color: var(--night-ink); }
+.slot { background: var(--slot); border-color: var(--slot-edge); }
+.slot span { color: var(--night-ink); }
+@media (max-width: 760px) {
+  /* on phones the bio sits above the photo, on the page itself */
+  .about__text { color: var(--t-fg); }
+}
+
+/* lamp viewer */
+.viewer { background: var(--t-band); color: var(--t-fg); border-color: var(--t-line); }
+.viewer p { color: var(--t-body); }
+.viewer__close { color: var(--t-fg); border-color: var(--t-line); }
+
+/* ---------- Temporary background switcher (remove once a background is chosen) ---------- */
+.bg-picker {
+  position: fixed; z-index: 90;
+  right: calc(14px + env(safe-area-inset-right, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px 8px 14px; border-radius: 999px;
+  background: rgba(20, 20, 20, 0.9); color: #f4f2e6;
+  font: 13px/1.2 var(--serif); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+  max-width: calc(100vw - 28px);
+}
+.bg-picker__label { white-space: nowrap; font-style: italic; }
+.bg-picker__name { white-space: nowrap; min-width: 9.5em; }
+.bg-picker__swatches { display: flex; gap: 6px; }
+.bg-picker button {
+  width: 24px; height: 24px; border-radius: 50%; padding: 0; cursor: pointer;
+  border: 1px solid rgba(244, 242, 230, 0.45); position: relative; overflow: hidden;
+  background: var(--sw);
+}
+.bg-picker button::after { content: ""; position: absolute; right: 0; bottom: 0; width: 46%; height: 46%; background: var(--sa); }
+.bg-picker button[aria-pressed="true"] { outline: 2px solid #dad62c; outline-offset: 2px; }
+@media (max-width: 520px) {
+  .bg-picker__label { display: none; }
+  .bg-picker__name { min-width: 0; }
+}
+
+/* light backgrounds: the designer heading sits fully above the portrait so dark type never lands on her hair */
+html[data-tone="light"] .designer__head { margin-bottom: 0.18em; }
+
+
+/* ---------- "Lights on": going to the Studio (see transition.js) ----------
+   Leaving: the screen goes dark, a little ceramic pendant drops in on its cord and flickers on.
+   Arriving on studio.html#lit: the lit lamp lifts away, the dark fades, then the page pops in. */
+.lights {
+  --drop: 24vh;
+  position: fixed; inset: 0; z-index: 100; pointer-events: none;
+  background: var(--night-deep, #1c1c1c);
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+}
+.lights.is-on, html.lit-arrive .lights { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
+.lights__glow {
+  position: absolute; left: 50%; top: calc(var(--drop) + min(14vmin, 120px));
+  width: 130vmax; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; opacity: 0;
+  background: radial-gradient(circle, rgba(255, 210, 130, 0.36), rgba(255, 186, 92, 0.13) 26%, rgba(255, 186, 92, 0) 55%);
+}
+/* the pendant from the options preview (Sam: "I like the original lamp icon"): a smooth ceramic dome,
+   brass cap and a round bulb hanging just below; sized in em, where 1em = 1/16 of the lamp's width */
+.lights__pendant {
+  position: absolute; left: 50%; top: 0; width: min(26vmin, 210px); font-size: calc(min(26vmin, 210px) / 16);
+  transform: translate(-50%, -105%);
+}
+.lights__cord { width: 1px; height: var(--drop); margin: 0 auto; background: #8a877c; }
+.lights__cap { width: 2.4em; height: 2em; margin: 0 auto; border-radius: 0.4em 0.4em 0 0; background: linear-gradient(#e0bd66, #9c7a2e); }
+.lights__shade {
+  position: relative; height: 6.5em; border-radius: 50% 50% 8% 8% / 100% 100% 12% 12%;
+  background: radial-gradient(circle at 30% 30%, #b39a77, #8d7552 60%, #6e5a3e);
+}
+.lights__shade::after {              /* the bulb under the shade */
+  content: ""; position: absolute; left: 50%; bottom: -1.6em; width: 4em; height: 4em; margin-left: -2em;
+  border-radius: 50%; background: #3a3631;
+}
+.lights.is-on .lights__pendant { animation: lights-drop 0.5s cubic-bezier(0.3, 0.9, 0.4, 1.15) 0.2s forwards; }
+.lights.is-on .lights__shade::after { animation: lights-flicker 0.5s steps(1) 0.75s forwards; }
+.lights.is-on .lights__glow { animation: lights-bloom 0.45s ease 1s forwards; }
+html.lit-arrive .lights__pendant { transform: translate(-50%, 0); animation: lights-lift 0.5s cubic-bezier(0.5, 0, 0.75, 0.4) 0.3s forwards; }
+html.lit-arrive .lights__shade::after, html.lit-arrive .lights__glow { animation: none; }
+html.lit-arrive .lights__shade::after { background: #fff2c4; box-shadow: 0 0 4em 2em rgba(255, 210, 120, 0.85), 0 0 14em 7em rgba(255, 186, 92, 0.3); }
+html.lit-arrive .lights__glow { opacity: 1; animation: lights-out 0.5s ease 0.3s forwards; }
+html.lit-arrive .lights { animation: lights-out 0.45s ease 0.55s forwards; }
+@keyframes lights-drop { to { transform: translate(-50%, 0); } }
+@keyframes lights-lift { to { transform: translate(-50%, -105%); } }
+@keyframes lights-bloom { to { opacity: 1; } }
+@keyframes lights-out { to { opacity: 0; } }
+@keyframes lights-flicker {
+  0%   { background: #fff2c4; box-shadow: 0 0 3em 1.5em rgba(255, 210, 120, 0.9); }
+  30%  { background: #3a3631; box-shadow: none; }
+  45%, 100% { background: #fff2c4; box-shadow: 0 0 4em 2em rgba(255, 210, 120, 0.85), 0 0 14em 7em rgba(255, 186, 92, 0.3); }
+}
+@media (prefers-reduced-motion: reduce) { .lights { display: none; } }

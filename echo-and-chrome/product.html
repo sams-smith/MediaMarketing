@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Product 1 · Echo &amp; Chrome</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oranienbaum&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap">
+<link rel="stylesheet" href="site.css">
+<script>if (/~in$/.test(location.hash)) document.documentElement.classList.add('slide-in');</script>
+<style>
+/* Layout: one product per page. "Back to Shop" above, large portrait
+   photo on the left with name and price to its right, Previous / Next
+   below; stacks on phones.
+   Which product shows comes from the link: product.html#3 is product 3. */
+.product-page {
+  max-width: 1240px; margin: 0 auto; width: 100%;
+  padding-left: var(--gutter-l); padding-right: var(--gutter-r);
+  padding-block: clamp(24px, 3vw, 40px) clamp(56px, 6vw, 96px);
+  display: grid; gap: clamp(20px, 2.4vw, 32px);
+}
+.back { justify-self: start; font-size: 16px; }
+
+.product {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: clamp(28px, 5vw, 80px);
+  align-items: start;
+}
+/* as large as possible, but never taller than the window */
+.product__photo { width: min(56vw, calc((100vh - 190px) * 467 / 610), 640px); min-width: 260px; }
+/* Photo gallery: 4 photos side by side on a track that pans left/right */
+.gallery { position: relative; aspect-ratio: 467 / 610; overflow: hidden; touch-action: pan-y; }
+/* Crossfade: the 4 photos sit stacked; the next one dissolves in on top of the last */
+.gallery__track { position: relative; height: 100%; isolation: isolate; }  /* keeps the photo stack under the arrows and dots */
+.gallery__slide { position: absolute; inset: 0; height: 100%; aspect-ratio: auto; opacity: 0; z-index: 0; }
+.gallery__slide.is-prev { opacity: 1; z-index: 1; }
+.gallery__slide.is-current { opacity: 1; z-index: 2; transition: opacity 0.65s ease; }
+.gallery.no-anim .gallery__slide { transition: none; }
+.gallery__slide span { font-size: 18px; }
+.gallery__arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid var(--line); background: rgba(28, 28, 28, 0.72); color: var(--yellow);
+  display: grid; place-items: center; cursor: pointer; padding: 0;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.gallery__arrow:hover { border-color: var(--yellow); background: rgba(28, 28, 28, 0.9); }
+.gallery__arrow svg { width: 18px; height: 18px; }
+.gallery__arrow--prev { left: 12px; }
+.gallery__arrow--next { right: 12px; }
+.gallery__dots { position: absolute; left: 0; right: 0; bottom: 10px; display: flex; justify-content: center; gap: 2px; }
+.gallery__track { cursor: zoom-in; }   /* tapping the photo opens it larger */
+
+/* Larger view: the photo you're on, as big as the window allows, with arrows to keep going */
+.zoom {
+  width: 100vw; height: 100vh; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0;
+  background: rgba(20, 20, 20, 0.97); color: var(--yellow); overflow: hidden;
+}
+.zoom::backdrop { background: rgba(10, 10, 10, 0.6); }
+.zoom[open] { animation: zoom-in 0.28s ease; }
+@keyframes zoom-in { from { opacity: 0; } to { opacity: 1; } }
+.zoom__stage {
+  position: absolute; inset: calc(64px + env(safe-area-inset-top, 0px)) calc(76px + env(safe-area-inset-right, 0px)) calc(64px + env(safe-area-inset-bottom, 0px)) calc(76px + env(safe-area-inset-left, 0px));
+  display: flex; align-items: center; justify-content: center;
+}
+.zoom__stage > * { animation: zoom-photo 0.35s ease; }
+@keyframes zoom-photo { from { opacity: 0; transform: scale(0.985); } to { opacity: 1; transform: none; } }
+.zoom__img { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5); }
+.zoom__stage .slot { height: min(100%, 900px); max-width: 100%; aspect-ratio: 467 / 610; }
+.zoom__stage .slot span { font-size: 20px; }
+.zoom__close {
+  position: absolute; top: calc(14px + env(safe-area-inset-top, 0px)); right: calc(14px + env(safe-area-inset-right, 0px));
+  background: none; border: 1px solid var(--line); color: var(--yellow); font: italic 16px/1 var(--serif); padding: 10px 16px; cursor: pointer;
+}
+.zoom__close:hover { border-color: var(--yellow); }
+.zoom .gallery__arrow { top: 50%; z-index: 2; }
+.zoom .gallery__arrow--prev { left: calc(16px + env(safe-area-inset-left, 0px)); }
+.zoom .gallery__arrow--next { right: calc(16px + env(safe-area-inset-right, 0px)); }
+.zoom__count {
+  position: absolute; left: 0; right: 0; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); margin: 0;
+  text-align: center; font-style: italic; font-size: 15px; color: var(--soft); pointer-events: none;
+}
+@media (max-width: 760px) {
+  .zoom__stage { inset: calc(60px + env(safe-area-inset-top, 0px)) calc(12px + env(safe-area-inset-right, 0px)) calc(84px + env(safe-area-inset-bottom, 0px)) calc(12px + env(safe-area-inset-left, 0px)); }
+  .zoom .gallery__arrow { top: auto; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); transform: none; }
+  .zoom__count { bottom: calc(28px + env(safe-area-inset-bottom, 0px)); }
+}
+@media (prefers-reduced-motion: reduce) { .zoom[open], .zoom__stage > * { animation: none; } }
+.gallery__dots button {
+  width: 24px; height: 24px; padding: 0; border: 0; background: none; cursor: pointer;
+  display: grid; place-items: center;
+}
+.gallery__dots button::before {
+  content: ""; width: 8px; height: 8px; border-radius: 50%;
+  border: 1px solid var(--yellow); background: transparent;
+}
+.gallery__dots button[aria-current="true"]::before { background: var(--yellow); }
+@media (prefers-reduced-motion: reduce) {
+  .gallery__slide.is-current, .gallery__arrow { transition: none; }
+}
+
+.product__info {
+  position: sticky; top: calc(var(--header-h) + env(safe-area-inset-top, 0px) + 32px);
+  padding-top: clamp(8px, 4vw, 56px);
+  display: grid; gap: 18px; justify-items: start;
+  min-width: 0;
+}
+.product__name {
+  margin: 0; font-weight: 400;
+  font-size: clamp(36px, 3.6vw, 58px); line-height: 0.95; letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+.product__rule { width: 64px; height: 1px; background: var(--line); border: 0; margin: 4px 0; }
+.product__price {
+  margin: 0; font-size: clamp(26px, 2.3vw, 36px); line-height: 1;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+/* boutique price tag: small raised $ in the logo font, small raised cents */
+.product__price .cur { font-family: var(--display); font-size: 0.55em; vertical-align: 0.7em; margin-right: 0.08em; }
+.product__price .cents { font-size: 0.55em; vertical-align: 0.7em; margin-left: 0.05em; }
+.product__desc {
+  margin: 6px 0 0; max-width: 42ch;
+  color: #e9e5d6; font-size: 17px; line-height: 1.65;
+  white-space: pre-line; text-wrap: pretty;
+}
+/* Buy: a solid chartreuse button (the one filled button on the site), or a quiet
+   "Sold" / "Coming soon" label when the piece is gone or has no checkout link yet */
+.buy { margin-top: 10px; display: grid; gap: 10px; justify-items: start; }
+.buy__btn {
+  display: inline-flex; align-items: center; gap: 0.6em;
+  padding: 15px 30px; border: 1px solid var(--t-accent, #dad62c);
+  background: var(--t-accent, #dad62c); color: var(--night-deep, #1c1c1c);
+  font: 500 17px/1 var(--serif); letter-spacing: 0.02em; text-decoration: none;
+  transition: background-color 0.2s, color 0.2s;
+}
+.buy__btn:hover { background: transparent; color: var(--t-accent, #dad62c); }
+.buy__btn:focus-visible { outline: 2px solid var(--t-accent, #dad62c); outline-offset: 3px; }
+.buy__state {
+  display: inline-block; padding: 14px 0 6px; font-style: italic; font-size: 17px;
+  color: var(--soft); border-bottom: 1px solid var(--line);
+}
+.buy__note { margin: 0; font-size: 14px; font-style: italic; color: var(--soft); }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.pager {
+  display: flex; justify-content: space-between; gap: 16px;
+  border-top: 1px solid var(--line); padding-top: 20px;
+  font-size: 16px;
+}
+
+.missing { text-align: center; padding-block: 15vh; display: grid; gap: 16px; justify-items: center; }
+.missing h1 { margin: 0; font-weight: 400; font-size: clamp(30px, 3vw, 44px); letter-spacing: -0.03em; }
+
+@media (max-width: 760px) {
+  .product { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .product__photo { width: 100%; max-width: 520px; justify-self: center; }
+  .product__info { position: static; padding-top: 0; }
+}
+</style>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+
+<header class="site-header" id="siteHeader">
+  <div class="site-header__inner">
+    <a class="brandmark" href="index.html">Echo<span>and</span>Chrome</a>
+    <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button>
+    <ul class="nav" id="siteNav">
+      <li><a href="index.html#brand">The Brand</a></li>
+      <li><a href="index.html#designer">The Designer</a></li>
+      <li><a href="studio.html">The Studio</a></li>
+      <li><a href="shop.html" aria-current="true">Shop</a></li>
+    </ul>
+  </div>
+</header>
+
+<main class="product-page">
+  <a class="back text-link" href="shop.html">← Back to Shop</a>
+
+  <article class="product" id="product">
+    <div class="product__photo gallery" id="gallery" data-pxf="-36" tabindex="0" aria-roledescription="carousel" aria-label="Product photos. Press Enter to view larger.">
+      <div class="gallery__track" id="gTrack">
+        <div class="slot gallery__slide is-current"><span>Photo 1 of 4</span></div>
+        <div class="slot gallery__slide" aria-hidden="true"><span>Photo 2 of 4</span></div>
+        <div class="slot gallery__slide" aria-hidden="true"><span>Photo 3 of 4</span></div>
+        <div class="slot gallery__slide" aria-hidden="true"><span>Photo 4 of 4</span></div>
+      </div>
+      <button class="gallery__arrow gallery__arrow--prev" id="gPrev" type="button" aria-label="Previous photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <button class="gallery__arrow gallery__arrow--next" id="gNext" type="button" aria-label="Next photo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+      <div class="gallery__dots" id="gDots"></div>
+      <p class="sr-only" id="gStatus" aria-live="polite"></p>
+    </div>
+    <div class="product__info">
+      <h1 class="product__name" id="pName">Product 1</h1>
+      <hr class="product__rule">
+      <p class="product__price" id="pPrice"><span class="sr-only">$625.00</span><span aria-hidden="true"><span class="cur">$</span>625<span class="cents">00</span></span></p>
+      <p class="product__desc" id="pDesc">Ceramic pendant shade in white clay, fired to cone 6 and finished in a high-gloss glaze. The scalloped rim is pierced and strung with beaded chain, and the shade hangs from a brass socket on cloth-covered cord.</p>
+      <div class="buy" id="buy"></div>
+    </div>
+  </article>
+
+  <div class="missing" id="missing" hidden>
+    <h1>That piece isn't in the shop</h1>
+    <a class="text-link" href="shop.html">Back to Shop</a>
+  </div>
+
+  <nav class="pager" id="pager" aria-label="More products">
+    <a class="text-link" id="prev" href="product.html#10">← Previous</a>
+    <a class="text-link" id="next" href="product.html#2">Next →</a>
+  </nav>
+</main>
+
+<dialog class="zoom" id="zoom" aria-label="Larger photo">
+  <button class="zoom__close" id="zClose" type="button">Close</button>
+  <div class="zoom__stage" id="zStage"></div>
+  <button class="gallery__arrow gallery__arrow--prev" id="zPrev" type="button" aria-label="Previous photo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+  </button>
+  <button class="gallery__arrow gallery__arrow--next" id="zNext" type="button" aria-label="Next photo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+  </button>
+  <p class="zoom__count" id="zCount" aria-live="polite"></p>
+</dialog>
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <div>
+      <a class="brandmark" href="index.html">Echo<span>and</span>Chrome</a>
+      <p>Handmade Vintage Inspired Lighting</p>
+    </div>
+    <ul class="nav" aria-label="Footer">
+      <li><a href="index.html#brand">The Brand</a></li>
+      <li><a href="index.html#designer">The Designer</a></li>
+      <li><a href="studio.html">The Studio</a></li>
+      <li><a href="shop.html" aria-current="true">Shop</a></li>
+    </ul>
+    <small>© 2026 Echo &amp; Chrome</small>
+  </div>
+</footer>
+
+<script src="products.js"></script>
+<script src="parallax.js" defer></script>
+<script src="transition.js" defer></script>
+<script>
+(function () {
+  var list = window.PRODUCTS || [];
+  var els = {
+    product: document.getElementById('product'),
+    track: document.getElementById('gTrack'),
+    dots: document.getElementById('gDots'),
+    status: document.getElementById('gStatus'),
+    gPrev: document.getElementById('gPrev'),
+    gNext: document.getElementById('gNext'),
+    gallery: document.getElementById('gallery'),
+    name: document.getElementById('pName'),
+    price: document.getElementById('pPrice'),
+    desc: document.getElementById('pDesc'),
+    buy: document.getElementById('buy'),
+    missing: document.getElementById('missing'),
+    pager: document.getElementById('pager'),
+    prev: document.getElementById('prev'),
+    next: document.getElementById('next')
+  };
+
+  function render() {
+    var id = decodeURIComponent(location.hash.replace(/^#/, '')).replace(/~in$/, '') || (list[0] && list[0].id);
+    var i = -1;
+    for (var n = 0; n < list.length; n++) { if (list[n].id === id) { i = n; break; } }
+
+    var found = i !== -1;
+    els.product.hidden = !found;
+    els.pager.hidden = !found;
+    els.missing.hidden = found;
+    if (!found) { document.title = 'Not found · Echo & Chrome'; return; }
+
+    var p = list[i];
+    els.name.textContent = p.name;
+    // "625.00" shows as $625 with a small raised $ and small raised 00
+    var parts = String(p.price).split('.');
+    els.price.textContent = '';
+    var spoken = document.createElement('span');
+    spoken.className = 'sr-only';
+    spoken.textContent = '$' + p.price;
+    var shown = document.createElement('span');
+    shown.setAttribute('aria-hidden', 'true');
+    var cur = document.createElement('span');
+    cur.className = 'cur';
+    cur.textContent = '$';
+    shown.appendChild(cur);
+    shown.appendChild(document.createTextNode(parts[0]));
+    if (parts[1]) {
+      var cents = document.createElement('span');
+      cents.className = 'cents';
+      cents.textContent = parts[1];
+      shown.appendChild(cents);
+    }
+    els.price.appendChild(spoken);
+    els.price.appendChild(shown);
+
+    els.desc.textContent = p.description || '';
+    els.desc.hidden = !p.description;
+    renderBuy(p);
+    buildGallery(p);
+    document.title = p.name + ' · Echo & Chrome';
+
+    var prev = list[(i - 1 + list.length) % list.length];
+    var next = list[(i + 1) % list.length];
+    els.prev.href = 'product.html#' + encodeURIComponent(prev.id);
+    els.next.href = 'product.html#' + encodeURIComponent(next.id);
+  }
+
+  // ---- Buy: goes to the piece's own checkout page (set buyUrl in products.js) ----
+  function renderBuy(p) {
+    els.buy.textContent = '';
+    if (p.sold) {
+      var sold = document.createElement('span');
+      sold.className = 'buy__state';
+      sold.textContent = 'Sold';
+      els.buy.appendChild(sold);
+      return;
+    }
+    if (!p.buyUrl) {
+      var soon = document.createElement('span');
+      soon.className = 'buy__state';
+      soon.textContent = 'Coming soon';
+      els.buy.appendChild(soon);
+      return;
+    }
+    var a = document.createElement('a');
+    a.className = 'buy__btn';
+    a.href = p.buyUrl;
+    a.rel = 'noopener';
+    a.textContent = 'Buy now';
+    a.setAttribute('aria-label', 'Buy ' + p.name + ' for $' + p.price);
+    els.buy.appendChild(a);
+    if (p.buyNote) {
+      var note = document.createElement('p');
+      note.className = 'buy__note';
+      note.textContent = p.buyNote;
+      els.buy.appendChild(note);
+    }
+  }
+
+  // ---- Photo gallery: arrows crossfade through the piece's 4 photos ----
+  var g = { index: 0, count: 0, name: '', timer: null };
+
+  function buildGallery(p) {
+    var photos = (p.photos && p.photos.length) ? p.photos.slice(0, 4) : [p.photo || ''];
+    g.count = photos.length; g.index = 0; g.name = p.name; g.photos = photos; g.alt = p.alt || p.name;
+    els.track.textContent = '';
+    els.dots.textContent = '';
+    photos.forEach(function (src, i) {
+      var slide = document.createElement('div');
+      slide.className = 'slot gallery__slide';
+      if (src) {
+        var img = document.createElement('img');
+        img.src = src;
+        img.alt = (p.alt || p.name) + ', photo ' + (i + 1) + ' of ' + photos.length;
+        slide.appendChild(img);
+        slide.classList.add('has-photo');
+      } else {
+        var label = document.createElement('span');
+        label.textContent = 'Photo coming soon';
+        slide.appendChild(label);
+      }
+      els.track.appendChild(slide);
+
+      var dot = document.createElement('button');
+      dot.type = 'button';
+      dot.setAttribute('aria-label', 'Show photo ' + (i + 1));
+      dot.addEventListener('click', function () { showPhoto(i); });
+      els.dots.appendChild(dot);
+    });
+    var many = g.count > 1;
+    els.gPrev.hidden = !many; els.gNext.hidden = !many; els.dots.hidden = !many;
+    // show the first photo straight away, without a fade
+    els.gallery.classList.add('no-anim');
+    showPhoto(0, true);
+    void els.gallery.offsetWidth;
+    els.gallery.classList.remove('no-anim');
+  }
+
+  function showPhoto(i, quiet) {
+    if (!g.count) return;
+    var from = g.index;
+    g.index = (i + g.count) % g.count;
+    if (g.index === from && !quiet) return;
+    clearTimeout(g.timer);
+    // the outgoing photo stays solid underneath while the new one fades in on top
+    Array.prototype.forEach.call(els.track.children, function (s, n) {
+      s.classList.remove('is-prev');
+      if (n === g.index) {
+        s.classList.add('is-current');
+        s.removeAttribute('aria-hidden');
+      } else {
+        if (n === from && !quiet) s.classList.add('is-prev');
+        s.classList.remove('is-current');
+        s.setAttribute('aria-hidden', 'true');
+      }
+    });
+    g.timer = setTimeout(function () {
+      Array.prototype.forEach.call(els.track.children, function (s) { s.classList.remove('is-prev'); });
+    }, 700);
+    Array.prototype.forEach.call(els.dots.children, function (d, n) {
+      d.setAttribute('aria-current', n === g.index ? 'true' : 'false');
+    });
+    if (!quiet) els.status.textContent = 'Photo ' + (g.index + 1) + ' of ' + g.count;
+  }
+
+  els.gPrev.addEventListener('click', function () { showPhoto(g.index - 1); });
+  els.gNext.addEventListener('click', function () { showPhoto(g.index + 1); });
+  els.gallery.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); showPhoto(g.index - 1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); showPhoto(g.index + 1); }
+  });
+  // swipe on phones
+  var startX = null, swipedAt = 0;
+  els.gallery.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; }, { passive: true });
+  els.gallery.addEventListener('touchend', function (e) {
+    if (startX === null) return;
+    var dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 40) { showPhoto(g.index + (dx < 0 ? 1 : -1)); swipedAt = Date.now(); }
+    startX = null;
+  });
+
+  // ---- Larger view: tap the photo (or press Enter on it) to see the one you're on, big ----
+  var zoomEl = document.getElementById('zoom');
+  var zStage = document.getElementById('zStage');
+  var zCount = document.getElementById('zCount');
+  var zPrev = document.getElementById('zPrev');
+  var zNext = document.getElementById('zNext');
+  var z = { index: 0 };
+  function renderZoom() {
+    var src = g.photos[z.index];
+    zStage.textContent = '';
+    if (src) {
+      var img = document.createElement('img');
+      img.className = 'zoom__img';
+      img.src = src;
+      img.alt = g.alt + ', photo ' + (z.index + 1) + ' of ' + g.count;
+      zStage.appendChild(img);
+    } else {
+      var ph = document.createElement('div');
+      ph.className = 'slot';
+      var label = document.createElement('span');
+      label.textContent = 'Photo coming soon';
+      ph.appendChild(label);
+      zStage.appendChild(ph);
+    }
+    zCount.textContent = g.name + ' · Photo ' + (z.index + 1) + ' of ' + g.count;
+    zPrev.hidden = zNext.hidden = g.count < 2;
+  }
+  function zoomTo(i) { z.index = (i + g.count) % g.count; renderZoom(); }
+  function openZoom() {
+    if (!g.count) return;
+    z.index = g.index;
+    renderZoom();
+    if (zoomEl.showModal) zoomEl.showModal(); else zoomEl.setAttribute('open', '');
+  }
+  function closeZoom() { if (zoomEl.close) zoomEl.close(); else zoomEl.removeAttribute('open'); }
+  els.track.addEventListener('click', function () {
+    if (Date.now() - swipedAt < 400) return;                     // that was a swipe, not a tap
+    openZoom();
+  });
+  els.gallery.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && e.target === els.gallery) { e.preventDefault(); openZoom(); }
+  });
+  zPrev.addEventListener('click', function () { zoomTo(z.index - 1); });
+  zNext.addEventListener('click', function () { zoomTo(z.index + 1); });
+  document.getElementById('zClose').addEventListener('click', closeZoom);
+  zoomEl.addEventListener('click', function (e) { if (e.target === zoomEl || e.target === zStage) closeZoom(); });
+  zoomEl.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); zoomTo(z.index - 1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); zoomTo(z.index + 1); }
+  });
+  var zStartX = null;
+  zoomEl.addEventListener('touchstart', function (e) { zStartX = e.touches[0].clientX; }, { passive: true });
+  zoomEl.addEventListener('touchend', function (e) {
+    if (zStartX === null) return;
+    var dx = e.changedTouches[0].clientX - zStartX;
+    if (Math.abs(dx) > 40) zoomTo(z.index + (dx < 0 ? 1 : -1));
+    zStartX = null;
+  });
+  // closing leaves the page on the photo you were last looking at
+  zoomEl.addEventListener('close', function () {
+    if (z.index !== g.index) showPhoto(z.index);
+    els.gallery.focus({ preventScroll: true });
+  });
+
+  render();
+  // Previous / Next only change the #number, so redraw and go back to the top
+  window.addEventListener('hashchange', function () {
+    render();
+    window.scrollTo(0, 0);
+  });
+})();
+</script>
+</body>
+</html>

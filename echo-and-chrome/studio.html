@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Echo &amp; Chrome Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oranienbaum&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap">
+<link rel="stylesheet" href="site.css">
+<script>if (location.hash === '#lit' && !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) document.documentElement.classList.add('lit-arrive');</script>
+<style>
+/* Layout ("Gallery cards", Sam's pick): page title, the studio cats as two portrait
+   photo cards, three in a row (each one a crossfade photo gallery like the lamp pages),
+   then the studio playlist as liner notes, Side A and Side B. Stacks on phones.
+   Names, photos and songs live in studio.js. */
+.studio {
+  max-width: 1240px; margin: 0 auto; width: 100%;
+  padding-left: var(--gutter-l); padding-right: var(--gutter-r);
+  padding-block: clamp(40px, 4.75vw, 68px) clamp(84px, 6vw, 96px);
+  display: grid; gap: clamp(56px, 6vw, 96px);
+}
+.studio__head {
+  margin: 0; text-align: center; color: var(--t-head, var(--yellow));
+  font-weight: 400; font-size: clamp(36px, 3.7vw, 60px);
+  line-height: 0.9; letter-spacing: -0.053em;
+}
+.studio__sub {
+  margin: 0; text-align: center; color: var(--t-head, var(--yellow));
+  font-weight: 400; font-size: clamp(26px, 2.4vw, 36px); line-height: 1; letter-spacing: -0.03em;
+}
+.studio__kicker { margin: 8px 0 0; text-align: center; font-style: italic; font-size: 16px; color: var(--t-body, #e9e5d6); }
+.block { display: grid; gap: clamp(20px, 2.2vw, 30px); }
+
+/* ---------- The cats ---------- */
+.pets {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 340px)); justify-content: center;   /* three cats in a row */
+  gap: clamp(12px, 1.6vw, 24px); list-style: none; margin: 0; padding: 0;
+}
+.pet { position: relative; aspect-ratio: 467 / 610; max-width: 100%; }
+
+/* Photo gallery: the photos sit stacked; the next one dissolves in on top of the last (same as the lamp pages) */
+.gallery { position: absolute; inset: 0; overflow: hidden; touch-action: pan-y; background: var(--night, #262626); }
+.gallery__track { position: relative; height: 100%; isolation: isolate; }
+.gallery__slide { position: absolute; inset: 0; opacity: 0; z-index: 0; }
+.gallery__slide.is-prev { opacity: 1; z-index: 1; }
+.gallery__slide.is-current { opacity: 1; z-index: 2; transition: opacity 0.65s ease; }
+.gallery.no-anim .gallery__slide { transition: none; }
+.shot { position: absolute; inset: 0; overflow: hidden; background: var(--night, #262626); --o: 0.66; }
+.shot img { display: block; width: 100%; height: 100%; object-fit: cover; opacity: var(--o); }
+.has-parallax .shot img[data-px] {
+  position: absolute; left: 0; width: 100%;
+  top: calc(var(--f, 0.12) * -100%); height: calc(100% + var(--f, 0.12) * 200%);
+  will-change: transform;
+}
+.gallery__slide.slot { aspect-ratio: auto; border: 1px solid var(--slot-edge); }
+.gallery__slide.slot span { color: var(--night-ink, #dad62c); font-size: 17px; margin-top: 30%; }
+.gallery__arrow {
+  position: absolute; top: 46%; transform: translateY(-50%); z-index: 4;
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid var(--line); background: rgba(28, 28, 28, 0.72); color: var(--night-ink, #dad62c);
+  display: grid; place-items: center; cursor: pointer; padding: 0;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.gallery__arrow:hover { border-color: var(--night-ink, #dad62c); background: rgba(28, 28, 28, 0.9); }
+.gallery__arrow svg { width: 18px; height: 18px; }
+.gallery__arrow--prev { left: 10px; }
+.gallery__arrow--next { right: 10px; }
+
+/* name and job low on the photo, below the cat, with the photo dots under them */
+.pet__text {
+  position: absolute; left: 50%; bottom: 3%; transform: translateX(-50%); z-index: 3;
+  width: 86%; text-align: center; display: grid; justify-items: center; gap: 3px;
+  pointer-events: none;
+}
+.pet__name {
+  margin: 0; font-weight: 400; color: var(--night-ink, #dad62c);
+  font-size: clamp(22px, 2vw, 30px); line-height: 1.15; font-style: italic;
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.16em;
+}
+.pet__job { margin: 0; color: var(--night-paper, #fffbf9); font-size: 15px; }
+.gallery__dots { display: flex; justify-content: center; gap: 2px; margin-top: 2px; pointer-events: auto; }
+.gallery__dots button { width: 24px; height: 24px; padding: 0; border: 0; background: none; cursor: pointer; display: grid; place-items: center; }
+.gallery__dots button::before { content: ""; width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--night-ink, #dad62c); background: transparent; }
+.gallery__dots button[aria-current="true"]::before { background: var(--night-ink, #dad62c); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* ---------- The playlist: liner notes ---------- */
+.liner { width: 100%; max-width: 980px; margin: 0 auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 clamp(28px, 5vw, 72px); }
+.liner__side { min-width: 0; }
+.liner__label { margin: 0 0 6px; padding-bottom: 6px; font-family: var(--display); font-weight: 400; font-size: 22px; letter-spacing: 0.04em; border-bottom: 1px solid var(--line); }
+.liner ol { list-style: none; margin: 0; padding: 0; }
+.liner li { display: grid; grid-template-columns: 1.8em 52px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding-block: 9px; border-bottom: 1px solid var(--line); }
+.liner__no { font-variant-numeric: tabular-nums lining-nums; font-size: 15px; color: var(--t-body, #e9e5d6); }
+/* album art; until there is one, a little record sits in its place */
+.liner__cover { width: 52px; aspect-ratio: 1; object-fit: cover; border-radius: 2px; background: var(--night-deep, #1c1c1c); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35); }
+.liner__cover--none {
+  border-radius: 50%; box-shadow: none;
+  background: radial-gradient(circle, var(--night, #262626) 0 5%, var(--night-ink, #dad62c) 6% 30%, transparent 31%),
+              repeating-radial-gradient(circle, #1b1b1b 0 1.5px, #121212 1.5px 3px);
+}
+.liner__song { min-width: 0; display: grid; gap: 2px; }
+.liner__title { line-height: 1.25; }
+.liner__artist { font-style: italic; font-size: 15px; color: var(--t-body, #e9e5d6); }
+.liner__go { font-size: 15px; white-space: nowrap; }
+.liner__go--soon { font-style: italic; color: var(--soft); }
+.liner__all { margin: 0; text-align: center; }
+
+@media (max-width: 760px) {
+  .liner { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+}
+@media (max-width: 599px) {
+  /* on phones three across would be too small to see the cats, so they stack */
+  .pets { grid-template-columns: minmax(0, 340px); gap: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gallery__slide.is-current, .gallery__arrow { transition: none; }
+}
+/* "Lights on" arrival: once the lamp has lifted away, the title, then "Studio Supervisors", then the cats pop up */
+@keyframes lit-pop { from { opacity: 0; transform: translateY(22px) scale(0.97); } to { opacity: 1; transform: none; } }
+html.lit-arrive .studio__head { animation: lit-pop 0.6s cubic-bezier(0.25, 1.3, 0.5, 1) 0.7s both; }
+html.lit-arrive #petsHead     { animation: lit-pop 0.6s cubic-bezier(0.25, 1.3, 0.5, 1) 0.85s both; }
+html.lit-arrive .pets         { animation: lit-pop 0.65s cubic-bezier(0.25, 1.2, 0.5, 1) 1s both; }
+</style>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<div class="lights" aria-hidden="true"><div class="lights__glow"></div><div class="lights__pendant"><div class="lights__cord"></div><div class="lights__cap"></div><div class="lights__shade"></div></div></div>
+
+<header class="site-header" id="siteHeader">
+  <div class="site-header__inner">
+    <a class="brandmark" href="index.html">Echo<span>and</span>Chrome</a>
+    <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button>
+    <ul class="nav" id="siteNav">
+      <li><a href="index.html#brand">The Brand</a></li>
+      <li><a href="index.html#designer">The Designer</a></li>
+      <li><a href="studio.html" aria-current="page">The Studio</a></li>
+      <li><a href="shop.html">Shop</a></li>
+    </ul>
+  </div>
+</header>
+
+<main class="studio">
+  <h1 class="studio__head">The Studio</h1>
+
+  <section class="block" aria-labelledby="petsHead">
+    <h2 class="studio__sub" id="petsHead">Studio Supervisors</h2>
+    <!-- Filled from studio.js -->
+    <ul class="pets" id="pets"></ul>
+  </section>
+
+  <section class="block" aria-labelledby="musicHead">
+    <div>
+      <h2 class="studio__sub" id="musicHead">On the Wheel</h2>
+      <p class="studio__kicker">what was spinning while your chandelier came together</p>
+    </div>
+    <!-- Filled from studio.js -->
+    <div class="liner" id="liner"></div>
+    <p class="liner__all" id="linerAll" hidden><a class="text-link" id="linerAllLink" href="" target="_blank" rel="noopener">Open the whole playlist on Spotify ↗</a></p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <div>
+      <a class="brandmark" href="index.html">Echo<span>and</span>Chrome</a>
+      <p>Handmade Vintage Inspired Lighting</p>
+    </div>
+    <ul class="nav" aria-label="Footer">
+      <li><a href="index.html#brand">The Brand</a></li>
+      <li><a href="index.html#designer">The Designer</a></li>
+      <li><a href="studio.html" aria-current="page">The Studio</a></li>
+      <li><a href="shop.html">Shop</a></li>
+    </ul>
+    <small>© 2026 Echo &amp; Chrome</small>
+  </div>
+</footer>
+
+<script src="products.js"></script>
+<script src="studio.js"></script>
+<script>
+(function () {
+  var data = window.STUDIO || { pets: [], playlist: { songs: [] } };
+
+  // ---------- the cats: one crossfade gallery per cat ----------
+  var list = document.getElementById('pets');
+  var ARROW = {
+    prev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+    next: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>'
+  };
+
+  data.pets.forEach(function (pet) {
+    var photos = (pet.photos && pet.photos.length) ? pet.photos : [''];
+    var li = document.createElement('li');
+    li.className = 'pet';
+    li.id = pet.id;
+
+    var gallery = document.createElement('div');
+    gallery.className = 'gallery';
+    gallery.tabIndex = 0;
+    gallery.setAttribute('aria-roledescription', 'carousel');
+    gallery.setAttribute('aria-label', 'Photos of ' + pet.name);
+    var track = document.createElement('div');
+    track.className = 'gallery__track';
+    photos.forEach(function (src, i) {
+      var slide = document.createElement('div');
+      if (src) {
+        slide.className = 'gallery__slide';
+        var shot = document.createElement('div');
+        shot.className = 'shot';
+        var img = document.createElement('img');
+        img.src = src;
+        img.alt = (pet.alts && pet.alts[i]) || (pet.name + ', photo ' + (i + 1) + ' of ' + photos.length);
+        img.setAttribute('data-px', '0.15');
+        if (i > 0) img.loading = 'lazy';
+        shot.appendChild(img);
+        slide.appendChild(shot);
+      } else {
+        slide.className = 'gallery__slide slot';
+        var label = document.createElement('span');
+        label.textContent = 'Photo coming soon';
+        slide.appendChild(label);
+      }
+      track.appendChild(slide);
+    });
+    gallery.appendChild(track);
+
+    var text = document.createElement('div');
+    text.className = 'pet__text';
+    text.innerHTML = '<h3 class="pet__name"></h3><p class="pet__job"></p>';
+    text.querySelector('.pet__name').textContent = pet.name;
+    text.querySelector('.pet__job').textContent = pet.job || '';
+    var dots = document.createElement('div');
+    dots.className = 'gallery__dots';
+    text.appendChild(dots);
+
+    var status = document.createElement('p');
+    status.className = 'sr-only';
+    status.setAttribute('aria-live', 'polite');
+
+    li.appendChild(gallery);
+    li.appendChild(text);
+    li.appendChild(status);
+
+    var g = { index: 0, count: photos.length, timer: null };
+    function show(i, quiet) {
+      var from = g.index;
+      g.index = (i + g.count) % g.count;
+      if (g.index === from && !quiet) return;
+      clearTimeout(g.timer);
+      // the outgoing photo stays solid underneath while the new one fades in on top
+      Array.prototype.forEach.call(track.children, function (s, n) {
+        s.classList.remove('is-prev');
+        if (n === g.index) { s.classList.add('is-current'); s.removeAttribute('aria-hidden'); }
+        else {
+          if (n === from && !quiet) s.classList.add('is-prev');
+          s.classList.remove('is-current');
+          s.setAttribute('aria-hidden', 'true');
+        }
+      });
+      g.timer = setTimeout(function () {
+        Array.prototype.forEach.call(track.children, function (s) { s.classList.remove('is-prev'); });
+      }, 700);
+      Array.prototype.forEach.call(dots.children, function (d, n) { d.setAttribute('aria-current', n === g.index ? 'true' : 'false'); });
+      if (!quiet) status.textContent = pet.name + ', photo ' + (g.index + 1) + ' of ' + g.count;
+    }
+
+    if (g.count > 1) {
+      ['prev', 'next'].forEach(function (dir) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'gallery__arrow gallery__arrow--' + dir;
+        b.setAttribute('aria-label', (dir === 'prev' ? 'Previous' : 'Next') + ' photo of ' + pet.name);
+        b.innerHTML = ARROW[dir];
+        b.addEventListener('click', function () { show(g.index + (dir === 'prev' ? -1 : 1)); });
+        gallery.appendChild(b);
+      });
+      photos.forEach(function (src, i) {
+        var d = document.createElement('button');
+        d.type = 'button';
+        d.setAttribute('aria-label', 'Show photo ' + (i + 1) + ' of ' + pet.name);
+        d.addEventListener('click', function () { show(i); });
+        dots.appendChild(d);
+      });
+      gallery.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowLeft') { e.preventDefault(); show(g.index - 1); }
+        if (e.key === 'ArrowRight') { e.preventDefault(); show(g.index + 1); }
+      });
+      var startX = null;   // swipe on phones
+      gallery.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; }, { passive: true });
+      gallery.addEventListener('touchend', function (e) {
+        if (startX === null) return;
+        var dx = e.changedTouches[0].clientX - startX;
+        if (Math.abs(dx) > 40) show(g.index + (dx < 0 ? 1 : -1));
+        startX = null;
+      });
+    }
+    gallery.classList.add('no-anim');
+    show(0, true);
+    list.appendChild(li);
+    void gallery.offsetWidth;
+    gallery.classList.remove('no-anim');
+  });
+
+  // ---------- the playlist: Side A and Side B ----------
+  var songs = (data.playlist && data.playlist.songs) || [];
+  var liner = document.getElementById('liner');
+  var half = Math.ceil(songs.length / 2);
+  [['Side A', songs.slice(0, half), 0], ['Side B', songs.slice(half), half]].forEach(function (side) {
+    if (!side[1].length) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'liner__side';
+    var label = document.createElement('h3');
+    label.className = 'liner__label';
+    label.textContent = side[0];
+    var ol = document.createElement('ol');
+    ol.setAttribute('aria-label', side[0]);
+    side[1].forEach(function (song, i) {
+      var li = document.createElement('li');
+      var no = document.createElement('span');
+      no.className = 'liner__no';
+      no.textContent = String(side[2] + i + 1).padStart(2, '0');
+      var cover;
+      if (song.cover) {
+        cover = document.createElement('img');
+        cover.className = 'liner__cover';
+        cover.src = song.cover;
+        cover.alt = 'Album art for ' + (song.title || 'this song');
+        cover.loading = 'lazy';
+      } else {
+        cover = document.createElement('span');
+        cover.className = 'liner__cover liner__cover--none';
+        cover.setAttribute('aria-hidden', 'true');
+      }
+      var name = document.createElement('span');
+      name.className = 'liner__song';
+      var title = document.createElement('span');
+      title.className = 'liner__title';
+      title.textContent = song.title || '';
+      name.appendChild(title);
+      if (song.artist) {
+        var artist = document.createElement('span');
+        artist.className = 'liner__artist';
+        artist.textContent = song.artist;
+        name.appendChild(artist);
+      }
+      // the song's own Spotify link, or Spotify's search for it (the song is the top result)
+      var query = (song.title || '').replace(/\s*[\(\-]\s*feat\..*$/i, '') + ' ' + (song.artist || '').split(',')[0];
+      var href = song.url || ('https://open.spotify.com/search/' + encodeURIComponent(query.trim()));
+      var go = document.createElement('a');
+      go.className = 'liner__go text-link';
+      go.href = href;
+      go.target = '_blank';
+      go.rel = 'noopener';
+      go.textContent = 'Spotify ↗';
+      go.setAttribute('aria-label', 'Listen to ' + (song.title || 'this song') + ' by ' + (song.artist || '') + ' on Spotify');
+      li.appendChild(no); li.appendChild(cover); li.appendChild(name); li.appendChild(go);
+      ol.appendChild(li);
+    });
+    wrap.appendChild(label);
+    wrap.appendChild(ol);
+    liner.appendChild(wrap);
+  });
+  if (data.playlist && data.playlist.url) {
+    document.getElementById('linerAllLink').href = data.playlist.url;
+    document.getElementById('linerAll').hidden = false;
+  }
+})();
+</script>
+<script src="parallax.js"></script>
+<script src="transition.js"></script>
+</body>
+</html>

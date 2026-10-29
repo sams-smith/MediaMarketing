@@ -1,0 +1,499 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Echo &amp; Chrome</title>
+<meta name="description" content="Echo &amp; Chrome — handmade vintage inspired lighting.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oranienbaum&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap">
+<style>
+/* Layout: five full-bleed bands, each built on Sam's 1366px Canva canvas.
+   Desktop keeps the Canva composition (sizes scale with the window);
+   below 760px every band stacks into a single readable column. */
+:root {
+  color-scheme: dark;
+  --ink: #262626;          /* page background from the design */
+  --ink-deep: #1c1c1c;     /* header + footer */
+  --yellow: #dad62c;       /* mustard chartreuse: every headline and link */
+  --paper: #fffbf9;        /* small body text on photos */
+  --line: rgba(218, 214, 44, 0.22);
+  --scrim: rgba(20, 20, 20, 0.86);
+
+  --display: "Oranienbaum", "Bodoni Moda", "Bodoni 72", Didot, "Times New Roman", serif;
+  --serif: "Playfair Display", Georgia, "Times New Roman", serif;
+
+  --gutter-l: max(16px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(16px, env(safe-area-inset-right, 0px));
+  --header-h: 60px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-padding-top: calc(var(--header-h) + env(safe-area-inset-top, 0px)); }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+
+body {
+  background: var(--ink);
+  color: var(--yellow);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.4;
+  overflow-x: hidden;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px); z-index: 10;
+  background: var(--ink-deep);
+}
+
+a { color: inherit; }
+img { display: block; max-width: 100%; }
+:focus-visible { outline: 2px solid var(--yellow); outline-offset: 3px; }
+.photo-link, .text-link {
+  font-style: italic;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.16em;
+}
+
+/* Every photo sits on the dark ground at the same opacity as in Canva. */
+.shot { position: relative; background: var(--ink); overflow: hidden; }
+.shot img, .shot video { display: block; width: 100%; height: 100%; object-fit: cover; opacity: var(--o, 0.5); }
+/* Parallax: a photo marked data-px is taller than its frame and drifts inside it as you scroll */
+.has-parallax .shot img[data-px], .has-parallax .shot video[data-px] {
+  position: absolute; left: 0; width: 100%;
+  top: calc(var(--f, 0.12) * -100%); height: calc(100% + var(--f, 0.12) * 200%);
+  will-change: transform;
+}
+.has-parallax [data-pxf] { will-change: transform; }
+
+/* ---------- Header ---------- */
+.site-header {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: var(--ink-deep);
+  border-bottom: 1px solid var(--line);
+}
+.site-header__inner {
+  height: var(--header-h);
+  padding-left: var(--gutter-l); padding-right: var(--gutter-r);
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  max-width: 1600px; margin: 0 auto;
+}
+.brandmark {
+  font-family: var(--display); font-size: 26px; line-height: 1;
+  text-decoration: none; letter-spacing: 0.01em; white-space: nowrap;
+}
+.brandmark span { font-family: var(--serif); font-size: 0.62em; font-style: italic; margin: 0 0.2em; }
+.nav { display: flex; gap: clamp(18px, 2.4vw, 36px); list-style: none; margin: 0; padding: 0; }
+.nav a {
+  font-size: 16px; text-decoration: none; padding-block: 6px;
+  border-bottom: 1px solid transparent; transition: border-color 0.2s;
+}
+.nav a:hover, .nav a[aria-current="true"] { border-bottom-color: var(--yellow); }
+.nav a[aria-current="true"] { font-style: italic; }
+.menu-btn {
+  display: none; background: none; border: 1px solid var(--line); color: var(--yellow);
+  font: italic 16px/1 var(--serif); padding: 9px 14px; cursor: pointer;
+}
+
+/* ---------- 1. Hero ---------- */
+.hero {
+  position: relative; isolation: isolate; overflow: hidden;
+  height: clamp(560px, 72vw, 1040px);   /* tall enough to show the candle glow above the dish */
+  display: grid; place-items: center;
+  grid-template-rows: 42fr auto 58fr;     /* logo block sits a little above center so it stays in the first screen */
+  padding-left: var(--gutter-l); padding-right: var(--gutter-r); padding-block: 48px;
+}
+.hero .shot { position: absolute; inset: 0; z-index: -1; --o: 0.62; --shade: 0.45; }
+.hero .shot img { object-position: 50% 50%; }
+/* soft shade right behind the logo so the photo can be brighter around it */
+.hero .shot::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 46% 52% at 50% 46%, rgba(30, 30, 30, var(--shade, 0)) 0%, rgba(30, 30, 30, calc(var(--shade, 0) * 0.45)) 55%, rgba(30, 30, 30, 0) 100%);
+}
+.hero__content { grid-row: 2; display: grid; justify-items: center; text-align: center; gap: clamp(10px, 1vw, 16px); }
+.wordmark {
+  margin: 0; font-family: var(--display); font-weight: 400;
+  font-size: clamp(92px, 13.2vw, 206px); line-height: 0.74;
+  display: grid; justify-items: center;
+}
+.wordmark__echo { transform: translateX(0.17em); }
+.wordmark__and {
+  font-family: var(--serif); font-style: italic;
+  font-size: 0.256em; line-height: 1; margin-block: -0.28em 0.06em;
+  transform: translate(0.32em, 0.3em);
+}
+.wordmark__chrome { transform: translateX(-0.3em); }
+.hero__more { margin-top: clamp(28px, 3.6vw, 56px); font-size: clamp(19px, 1.88vw, 30px); }
+.hero__tagline { margin: 0; font-size: clamp(19px, 2.26vw, 36px); line-height: 1.05; text-wrap: balance; }
+
+/* ---------- 2. Lighting done timelessly ---------- */
+.lighting { display: grid; grid-template-columns: 757fr 609fr; }
+.lighting__text {
+  padding-left: var(--gutter-l); padding-right: var(--gutter-r);
+  padding-block: clamp(48px, 9.6vw, 150px) 48px;
+  min-width: 0;
+}
+.big-head {
+  margin: 0 0 0 max(0px, calc(4.76vw - 16px));
+  font-weight: 400; font-size: clamp(50px, 6.54vw, 104px);
+  line-height: 0.9; letter-spacing: -0.053em; text-wrap: balance;
+}
+.big-head em { display: block; padding-left: 0.55em; }
+.lighting .shot { aspect-ratio: 609 / 768; --o: 0.8; border-left: 1px solid rgba(255,255,255,0.08); isolation: isolate; }
+/* the lit lamp photo keeps its own warm color; soft dark edges draw the eye to the lamp */
+.lighting .shot::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 2;
+  background: radial-gradient(ellipse 85% 80% at 50% 48%, rgba(0, 0, 0, 0) 45%, rgba(16, 13, 9, 0.5) 100%);
+}
+
+/* ---------- 3. The BRAND ---------- */
+.brand { padding-top: clamp(40px, 4.75vw, 68px); }
+.section-head {
+  margin: 0 0 clamp(24px, 2.4vw, 34px); text-align: center;
+  font-weight: 400; font-size: clamp(36px, 3.7vw, 60px);
+  line-height: 0.9; letter-spacing: -0.053em;
+  padding-left: var(--gutter-l); padding-right: var(--gutter-r);
+}
+.cards {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8vw;
+  list-style: none; margin: 0; padding: 0;
+}
+.card { position: relative; aspect-ratio: 467 / 610; }
+.card .shot { position: absolute; inset: 0; --o: 0.66; }
+.card .shot img { transition: opacity 0.35s ease; }
+.card:hover .shot img, .card:focus-within .shot img { opacity: 0.92; }
+/* the title sits on the photo, low down near the bottom edge, below the lamp */
+.card__text {
+  position: absolute; left: 50%; bottom: var(--title-low, 3%); transform: translateX(-50%);
+  width: min(59%, 300px); text-align: center;
+}
+.card__title {
+  font-size: clamp(19px, 1.88vw, 30px); line-height: 1.2;
+  background: none; border: 0; padding: 0; color: var(--yellow); cursor: pointer;
+  font-family: var(--serif);
+}
+.card { cursor: pointer; }
+
+/* ---------- 4. The designer ---------- */
+.designer { padding-top: clamp(64px, 12.7vw, 174px); }
+.designer__head {
+  position: relative; z-index: 1; margin: 0;
+  padding-left: var(--gutter-l); padding-right: var(--gutter-r);
+  font-weight: 400; font-size: clamp(54px, 6.54vw, 104px);
+  line-height: 0.9; letter-spacing: -0.053em;
+  margin-bottom: -0.6em;
+}
+.designer__head > span { display: block; margin-left: max(0px, calc(1.67vw - 16px)); }
+.designer__kicker { font-size: 0.477em; margin-bottom: 0.18em; padding-left: 0.62em; word-spacing: 0.14em; }
+.designer .shot { aspect-ratio: 1366 / 490; --o: 0.49; }
+.designer .shot img { object-position: 56% 30%; }
+
+/* ---------- 5. About ---------- */
+.about { position: relative; aspect-ratio: 1366 / 768; }
+.about .shot { position: absolute; inset: 0; --o: 0.405; }
+.about .shot img { object-position: 0% 50%; }
+.about__text {
+  position: absolute; left: 60.3%; top: 8%; width: min(36%, 560px);
+  margin: 0; font-size: clamp(18px, 2.18vw, 34px); line-height: 1.3;
+}
+
+/* ---------- Footer ---------- */
+.site-footer { background: var(--ink-deep); border-top: 1px solid var(--line); }
+.site-footer__inner {
+  max-width: 1600px; margin: 0 auto;
+  padding-left: var(--gutter-l); padding-right: var(--gutter-r);
+  padding-block: 48px calc(40px + env(safe-area-inset-bottom, 0px));
+  display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 28px 48px;
+}
+.site-footer .brandmark { font-size: 40px; }
+.site-footer p { margin: 10px 0 0; font-style: italic; font-size: 16px; }
+.site-footer .nav { flex-wrap: wrap; }
+.site-footer small { flex-basis: 100%; font-size: 13px; color: rgba(218, 214, 44, 0.62); }
+
+/* ---------- Lamp viewer ---------- */
+.viewer {
+  border: 1px solid var(--line); background: var(--ink-deep); color: var(--yellow);
+  padding: 0; width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 32px);
+}
+.viewer::backdrop { background: var(--scrim); }
+.viewer__body { display: grid; gap: 14px; padding: 16px 16px 22px; }
+.viewer__img { background: #d9d9d9; }
+.viewer__img img { width: 100%; max-height: min(64dvh, 620px); object-fit: contain; margin: 0 auto; }
+.viewer__row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+.viewer h3 { margin: 0; font-weight: 400; font-style: italic; font-size: 30px; }
+.viewer p { margin: 0; color: var(--paper); font-size: 17px; }
+.viewer__close {
+  background: none; border: 1px solid var(--line); color: var(--yellow);
+  font: italic 15px/1 var(--serif); padding: 8px 12px; cursor: pointer;
+}
+
+.swipe-hint {
+  display: none; margin: 14px 0 0; text-align: center; font-style: italic; font-size: 14px;
+  color: rgba(218, 214, 44, 0.62);
+}
+
+/* ---------- "Logo moment" cover used when pressing Shop (see transition.js) ---------- */
+.veil {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--ink-deep);
+  display: grid; place-items: center;
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0s linear 0.5s;
+}
+.veil.is-on, html.arriving .veil { opacity: 1; visibility: visible; transition: opacity 0.4s ease; }
+.veil__mark {
+  margin: 0; display: grid; justify-items: center; text-align: center;
+  font-family: var(--display); color: var(--yellow);
+  font-size: clamp(72px, 9vw, 128px); line-height: 0.8;
+  transform: scale(0.97); transition: transform 0.9s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.veil__mark i { font-family: var(--serif); font-size: 0.26em; line-height: 1.5; }
+.veil.is-on .veil__mark, html.arriving .veil__mark { transform: none; }
+/* Filament glow: a warm light flickers on behind the logo, like a bulb warming up */
+.veil__glow {
+  position: absolute; left: 50%; top: 50%;
+  width: min(92vmin, 780px); aspect-ratio: 1; transform: translate(-50%, -50%);
+  border-radius: 50%; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle, rgba(255, 196, 92, 0.32), rgba(255, 196, 92, 0.1) 38%, rgba(255, 196, 92, 0) 64%);
+}
+.veil.is-on .veil__glow { animation: filament-glow 1s linear forwards; }
+.veil.is-on .veil__mark { animation: filament-mark 1s linear forwards; }
+html.arriving .veil__glow { opacity: 1; }
+.veil.is-on .veil__mark, html.arriving .veil__mark { text-shadow: 0 0 28px rgba(255, 196, 92, 0.35); }
+@keyframes filament-glow {
+  0% { opacity: 0; } 12% { opacity: 0.9; } 20% { opacity: 0.15; }
+  34% { opacity: 1; } 44% { opacity: 0.45; } 56%, 100% { opacity: 1; }
+}
+@keyframes filament-mark {
+  0% { opacity: 0; filter: brightness(0.5); } 12% { opacity: 1; filter: brightness(1.4); }
+  20% { opacity: 0.35; } 34% { opacity: 1; } 44% { opacity: 0.6; }
+  56% { opacity: 1; filter: brightness(1.15); } 100% { opacity: 1; filter: brightness(1); }
+}
+
+/* ---------- Phones ---------- */
+@media (max-width: 760px) {
+  .menu-btn { display: inline-block; }
+  .site-header .nav {
+    display: none; position: absolute; top: 100%; left: 0; right: 0;
+    flex-direction: column; gap: 0;
+    background: var(--ink-deep); border-bottom: 1px solid var(--line);
+    padding-left: var(--gutter-l); padding-right: var(--gutter-r); padding-block: 6px 14px;
+  }
+  .site-header.is-open .nav { display: flex; }
+  .site-header .nav a { display: block; font-size: 20px; padding-block: 12px; border-bottom: 1px solid rgba(218,214,44,0.1); }
+
+  .hero { height: clamp(540px, 145vw, 720px); }   /* phones get their own tall crop of the photo */
+  .wordmark { font-size: min(22vw, 110px); }
+  .wordmark__echo { transform: translateX(0.12em); }
+  .wordmark__chrome { transform: translateX(-0.12em); }
+
+  .lighting { grid-template-columns: 1fr; }
+  .lighting__text { padding-block: 64px 40px; }
+  .lighting .shot { aspect-ratio: 4 / 5; border-left: 0; }
+
+  .cards {
+    grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 78%;
+    gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory;
+    padding-left: var(--gutter-l); padding-right: var(--gutter-r);
+    scrollbar-width: none;
+  }
+  .cards::-webkit-scrollbar { display: none; }
+  .card { scroll-snap-align: center; }
+  .swipe-hint { display: block; }
+
+  .designer .shot { aspect-ratio: 4 / 3; }
+
+  .about { aspect-ratio: auto; display: grid; }
+  .about .shot { position: relative; aspect-ratio: 4 / 3; order: 2; }
+  .about__text {
+    position: static; width: auto; order: 1;
+    padding-left: var(--gutter-l); padding-right: var(--gutter-r); padding-block: 48px 36px;
+    font-size: 21px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card .shot img, .nav a { transition: none; }
+}
+</style>
+<link rel="stylesheet" href="theme.css">
+
+<header class="site-header" id="siteHeader">
+  <div class="site-header__inner">
+    <a class="brandmark" href="#top" data-scroll>Echo<span>and</span>Chrome</a>
+    <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button>
+    <ul class="nav" id="siteNav">
+      <li><a href="#brand" data-scroll>The Brand</a></li>
+      <li><a href="#designer" data-scroll>The Designer</a></li>
+      <li><a href="studio.html">The Studio</a></li>
+      <li><a href="shop.html">Shop</a></li>
+    </ul>
+  </div>
+</header>
+
+<main>
+  <!-- 1. Hero -->
+  <section class="hero" id="top" aria-label="Echo and Chrome">
+    <div class="shot"><picture><source media="(max-width: 760px)" srcset="images/hero-beads-phone.jpg"><img data-px="0.08" src="images/hero-beads.jpg" srcset="images/hero-beads-1280.jpg 1280w, images/hero-beads.jpg 2560w" sizes="100vw" width="2560" height="2138" alt="Beaded strands and cut-crystal drops in a stone dish on a wood table, with a lit candle glowing behind." fetchpriority="high"></picture></div>
+    <div class="hero__content">
+      <h1 class="wordmark">
+        <span class="wordmark__echo">Echo</span>
+        <span class="wordmark__and">and</span>
+        <span class="wordmark__chrome">Chrome</span>
+      </h1>
+      <a class="hero__more text-link" href="shop.html">Shop</a>
+      <p class="hero__tagline">Handmade Vintage Inspired Lighting</p>
+    </div>
+  </section>
+
+  <!-- 2. Lighting done timelessly -->
+  <section class="lighting" id="lighting" aria-labelledby="lightingHead">
+    <div class="lighting__text">
+      <h2 class="big-head" id="lightingHead">Lighting <em><span>done timelessly</span></em></h2>
+    </div>
+    <div class="shot"><img data-px="0.12" src="images/lamp-lit.jpg" srcset="images/lamp-lit-900.jpg 900w, images/lamp-lit.jpg 1397w" sizes="(max-width: 760px) 100vw, 45vw" width="1397" height="2086" alt="A lit speckled ceramic pendant with a wavy rim, its glowing bulb showing beneath a fringe of pearls and amber beads on fine chains." loading="lazy"></div>
+  </section>
+
+  <!-- 3. The BRAND -->
+  <section class="brand" id="brand" aria-labelledby="brandHead">
+    <h2 class="section-head" id="brandHead">The BRAND</h2>
+    <ul class="cards">
+      <li class="card" id="light">
+        <div class="shot"><img data-px="0.15" src="images/card-light.jpg" width="759" height="1056" alt="Speckled ceramic pendant shade with slotted cut-outs and draped beaded chains." loading="lazy"></div>
+        <div class="card__text">
+          <button class="card__title photo-link" type="button" data-lamp="light">Light</button>
+        </div>
+      </li>
+      <li class="card" id="beading">
+        <div class="shot"><img data-px="0.15" src="images/card-beading.jpg" width="807" height="1056" alt="Cobalt blue pendant shade with a scalloped rim and a fringe of blue and clear beads." loading="lazy"></div>
+        <div class="card__text">
+          <button class="card__title photo-link" type="button" data-lamp="beading">Beading</button>
+        </div>
+      </li>
+      <li class="card" id="ceramics">
+        <div class="shot"><img data-px="0.15" src="images/card-ceramics.jpg" width="744" height="1056" alt="Speckled ceramic dome shade pierced with round holes, with a beaded shell fringe." loading="lazy"></div>
+        <div class="card__text">
+          <button class="card__title photo-link" type="button" data-lamp="ceramics">Ceramics</button>
+        </div>
+      </li>
+    </ul>
+    <p class="swipe-hint">Swipe for more</p>
+  </section>
+
+  <!-- 4. The designer -->
+  <section class="designer" id="designer" aria-labelledby="designerHead">
+    <h2 class="designer__head" id="designerHead">
+      <span class="designer__kicker">the <em>designer</em></span>
+      <span>SAM SMITH</span>
+    </h2>
+    <div class="shot"><img data-px="0.20" src="images/designer.jpg" width="786" height="282" alt="Black and white portrait of the designer, eyes closed, head tilted." loading="lazy"></div>
+  </section>
+
+  <!-- 5. About -->
+  <section class="about" id="about" aria-label="About the designer">
+    <div class="shot"><img data-px="0.18" src="images/about-lamp.jpg" width="788" height="443" alt="Close view of a speckled ceramic pendant with pierced holes glowing amber and a fringe of pearls." loading="lazy"></div>
+    <p class="about__text">As an interior designer, Sam Smith is drawn to the details that make a space feel warm: the glow of a lamp, the shine of a glaze, the way light falls across a room. Echo &amp; Chrome brings those details together in lighting designed and made by hand.</p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <div>
+      <a class="brandmark" href="#top" data-scroll>Echo<span>and</span>Chrome</a>
+      <p>Handmade Vintage Inspired Lighting</p>
+    </div>
+    <ul class="nav" aria-label="Footer">
+      <li><a href="#brand" data-scroll>The Brand</a></li>
+      <li><a href="#designer" data-scroll>The Designer</a></li>
+      <li><a href="studio.html">The Studio</a></li>
+      <li><a href="shop.html">Shop</a></li>
+    </ul>
+    <small>© 2026 Echo &amp; Chrome</small>
+  </div>
+</footer>
+
+<dialog class="viewer" id="viewer" aria-labelledby="viewerTitle">
+  <div class="viewer__body">
+    <div class="viewer__img"><img id="viewerImg" src="" alt=""></div>
+    <div class="viewer__row">
+      <h3 id="viewerTitle"></h3>
+      <button class="viewer__close" id="viewerClose" type="button">Close</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  var header = document.getElementById('siteHeader');
+  var menuBtn = document.getElementById('menuBtn');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function setMenu(open) {
+    header.classList.toggle('is-open', open);
+    menuBtn.setAttribute('aria-expanded', String(open));
+    menuBtn.textContent = open ? 'Close' : 'Menu';
+  }
+  menuBtn.addEventListener('click', function () { setMenu(!header.classList.contains('is-open')); });
+
+  // In-page links: smooth scroll, close the phone menu, keep a shareable #anchor
+  document.querySelectorAll('a[data-scroll]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      var id = a.getAttribute('href').slice(1);
+      var target = document.getElementById(id);
+      if (!target) return;
+      e.preventDefault();
+      setMenu(false);
+      target.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      try { history.replaceState(null, '', '#' + id); } catch (err) {}
+    });
+  });
+
+  // Underline the section you're reading in the header
+  var navLinks = header.querySelectorAll('.nav a');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        navLinks.forEach(function (l) {
+          l.setAttribute('aria-current', l.getAttribute('href') === '#' + en.target.id ? 'true' : 'false');
+        });
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    ['top', 'lighting', 'brand', 'designer', 'about'].forEach(function (id) {
+      var el = document.getElementById(id); if (el) io.observe(el);
+    });
+  }
+
+  // Lamp viewer: open a card's photo larger
+  var viewer = document.getElementById('viewer');
+  var vImg = document.getElementById('viewerImg');
+  var vTitle = document.getElementById('viewerTitle');
+  var lastTrigger = null;
+
+  function closeViewer() {
+    if (viewer.close) viewer.close(); else viewer.removeAttribute('open');
+  }
+  document.querySelectorAll('.card__title').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var card = btn.closest('.card');
+      var img = card.querySelector('img');
+      vImg.src = img.getAttribute('src');
+      vImg.alt = img.alt;
+      vTitle.textContent = btn.textContent;
+      lastTrigger = btn;
+      if (viewer.showModal) viewer.showModal(); else viewer.setAttribute('open', '');
+    });
+  });
+  // Clicking anywhere on a card opens it too, not just the title
+  document.querySelectorAll('.card').forEach(function (card) {
+    card.addEventListener('click', function (e) {
+      if (e.target.closest('.card__title')) return;
+      card.querySelector('.card__title').click();
+    });
+  });
+  document.getElementById('viewerClose').addEventListener('click', closeViewer);
+  viewer.addEventListener('click', function (e) { if (e.target === viewer) closeViewer(); });
+  viewer.addEventListener('close', function () { if (lastTrigger) lastTrigger.focus(); });
+})();
+</script>
+<script src="parallax.js"></script>
+<script src="transition.js"></script>
+
+</body></html>

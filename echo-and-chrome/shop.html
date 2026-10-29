@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Echo &amp; Chrome Shop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oranienbaum&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap">
+<link rel="stylesheet" href="site.css">
+<script>if (location.hash === '#arrive') document.documentElement.classList.add('arriving');</script>
+<style>
+/* Layout: a centered grid of portrait photo holders, 2 across and 5 down,
+   each up to 420px wide; each one links to its product page. */
+.shop {
+  max-width: 1500px; margin: 0 auto; width: 100%;
+  padding-left: var(--gutter-l); padding-right: var(--gutter-r);
+  padding-block: clamp(40px, 4.75vw, 68px) clamp(84px, 6vw, 96px);
+}
+.shop__head {
+  margin: 0 0 clamp(38px, 3vw, 44px); text-align: center;
+  font-weight: 400; font-size: clamp(36px, 3.7vw, 60px);
+  line-height: 0.9; letter-spacing: -0.053em;
+}
+.grid {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 420px));   /* bigger photos, still 2 across */
+  justify-content: center;
+  row-gap: clamp(28px, 5vw, 80px);
+  column-gap: clamp(14px, 4vw, 64px);
+  list-style: none; margin: 0 auto; padding: 0;
+}
+.grid a.slot { text-decoration: none; }
+.grid a.slot:hover { border-color: var(--yellow); }
+
+/* Scroll reveal: each photo slides up into place as it scrolls into view.
+   Tied to the scroll position itself, so photos already on screen sit still;
+   the right-hand photo lands a beat after the left. */
+.item:nth-child(odd)  { --k: 0; }
+.item:nth-child(even) { --k: 2; }
+@keyframes slide-up {
+  from { opacity: 0.3; transform: translateY(56px); }
+  to   { opacity: 1;   transform: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .item {
+      animation: slide-up linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover calc(32% + var(--k, 0) * 3%);
+    }
+  }
+}
+</style>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<div class="veil" aria-hidden="true"><div class="veil__glow"></div><p class="veil__mark">Echo<i>and</i>Chrome</p></div>
+
+<header class="site-header" id="siteHeader">
+  <div class="site-header__inner">
+    <a class="brandmark" href="index.html">Echo<span>and</span>Chrome</a>
+    <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="siteNav">Menu</button>
+    <ul class="nav" id="siteNav">
+      <li><a href="index.html#brand">The Brand</a></li>
+      <li><a href="index.html#designer">The Designer</a></li>
+      <li><a href="studio.html">The Studio</a></li>
+      <li><a href="shop.html" aria-current="page">Shop</a></li>
+    </ul>
+  </div>
+</header>
+
+<main>
+  <section class="shop" aria-labelledby="shopHead">
+    <h1 class="shop__head" id="shopHead">Shop</h1>
+    <!-- Names, prices and photos live in products.js -->
+    <ul class="grid" id="grid">
+      <li class="item"><a class="slot" href="product.html#1"  data-id="1"  aria-label="Product 1"><span>Photo 1</span></a></li>
+      <li class="item"><a class="slot" href="product.html#2"  data-id="2"  aria-label="Product 2"><span>Photo 2</span></a></li>
+      <li class="item"><a class="slot" href="product.html#3"  data-id="3"  aria-label="Product 3"><span>Photo 3</span></a></li>
+      <li class="item"><a class="slot" href="product.html#4"  data-id="4"  aria-label="Product 4"><span>Photo 4</span></a></li>
+      <li class="item"><a class="slot" href="product.html#5"  data-id="5"  aria-label="Product 5"><span>Photo 5</span></a></li>
+      <li class="item"><a class="slot" href="product.html#6"  data-id="6"  aria-label="Product 6"><span>Photo 6</span></a></li>
+      <li class="item"><a class="slot" href="product.html#7"  data-id="7"  aria-label="Product 7"><span>Photo 7</span></a></li>
+      <li class="item"><a class="slot" href="product.html#8"  data-id="8"  aria-label="Product 8"><span>Photo 8</span></a></li>
+      <li class="item"><a class="slot" href="product.html#9"  data-id="9"  aria-label="Product 9"><span>Photo 9</span></a></li>
+      <li class="item"><a class="slot" href="product.html#10" data-id="10" aria-label="Product 10"><span>Photo 10</span></a></li>
+    </ul>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <div>
+      <a class="brandmark" href="index.html">Echo<span>and</span>Chrome</a>
+      <p>Handmade Vintage Inspired Lighting</p>
+    </div>
+    <ul class="nav" aria-label="Footer">
+      <li><a href="index.html#brand">The Brand</a></li>
+      <li><a href="index.html#designer">The Designer</a></li>
+      <li><a href="studio.html">The Studio</a></li>
+      <li><a href="shop.html" aria-current="page">Shop</a></li>
+    </ul>
+    <small>© 2026 Echo &amp; Chrome</small>
+  </div>
+</footer>
+
+<script src="products.js"></script>
+<script>
+  // parallax: the right-hand column drifts ahead of the left (a little less on phones, where the photos are smaller)
+  var drift = window.matchMedia && window.matchMedia('(max-width: 900px)').matches ? '58' : '72';
+  document.querySelectorAll('#grid .item:nth-child(even) .slot').forEach(function (a) { a.setAttribute('data-pxf', drift); });
+</script>
+<script src="parallax.js"></script>
+<script src="transition.js"></script>
+<script>
+(function () {
+  if (!window.PRODUCTS) return;
+  var byId = {};
+  window.PRODUCTS.forEach(function (p) { byId[p.id] = p; });
+  document.querySelectorAll('#grid a.slot').forEach(function (a) {
+    var p = byId[a.getAttribute('data-id')];
+    if (!p) return;
+    a.setAttribute('aria-label', p.name + ', $' + p.price);
+    window.fillSlot(a, p);
+  });
+})();
+</script>
+</body>
+</html>
